@@ -12,12 +12,13 @@ Uses [go-wasm-http-server](https://github.com/nlepage/go-wasm-http-server).
 .
 ├── Makefile
 ├── go.mod / go.sum
-├── assets/
-│   ├── assets.go         ← embed package — recursively embeds all files in this directory
+├── assets_unminified/    ← unminified assets
 │   ├── index.html        ← auth UI
 │   ├── style.css         ← stylesheet
 │   ├── sw.js             ← Service Worker: loads WASM + IndexedDB helpers
 │   └── wasm_loader.html  ← entry page that registers the Service Worker
+├── assets/               ← assets_unminified minified into this directory
+│   └── assets.go         ← embed package — recursively embeds all files in this directory
 └── src/
     ├── main.go           ← route registration
     ├── handlers.go       ← API handlers

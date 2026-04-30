@@ -13,9 +13,10 @@
 
 # ---- Paths -----------------------------------------------------------------
 SRC_DIR    := ./src
-ASSETS_DIR := ./assets
 DIST_DIR   := ./dist
 BIN_DIR    := ./bin
+ASSETS_DIR := ./assets_unminified
+MIN_DIR    := ./assets
 
 # ---- Output names ----------------------------------------------------------
 BINARY     := $(BIN_DIR)/a.out
@@ -28,7 +29,10 @@ VERSION    := $(shell git describe --tags --always --dirty 2>/dev/null || echo d
 BUILD_TIME := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 LDFLAGS    := -ldflags "-X main.version=$(VERSION) -X main.buildTime=$(BUILD_TIME)"
 
+TAGS       := 
+
 # ---- Tools -----------------------------------------------------------------
+MINIFY     := minify
 GO         := go
 DARKHTTPD  := darkhttpd
 PORT       := 8000
@@ -47,19 +51,30 @@ all: build
 build: native wasm
 
 ## native: compile the native server binary
-native: $(BIN_DIR)
+native: $(BIN_DIR) minify
 	@echo "→ Building native binary: $(BINARY) ($(VERSION) @ $(BUILD_TIME))"
-	$(GO) build -C $(SRC_DIR) $(LDFLAGS) -o ../$(BINARY) .
+	@$(GO) build -C $(SRC_DIR) $(TAGS) $(LDFLAGS) -o ../$(BINARY) .
 	@echo "✓ $(BINARY) ready"
 
 ## wasm: compile the WASM module into dist/ alongside assets
-wasm: $(DIST_DIR)
+wasm: $(DIST_DIR) minify
 	@echo "→ Building WASM module: $(WASM_OUT) ($(VERSION) @ $(BUILD_TIME))"
-	@GOOS=js GOARCH=wasm $(GO) build -C $(SRC_DIR) $(LDFLAGS) -o ../$(WASM_OUT) .
+	@GOOS=js GOARCH=wasm $(GO) build -C $(SRC_DIR) $(TAGS) $(LDFLAGS) -o ../$(WASM_OUT) .
 	@echo "→ Copying assets to $(DIST_DIR)/"
-	@cp $(ASSETS_DIR)/sw.js            $(DIST_DIR)/sw.js
-	@cp $(ASSETS_DIR)/wasm_loader.html $(DIST_DIR)/index.html
+	@cp $(MIN_DIR)/sw.js            $(DIST_DIR)/sw.js
+	@cp $(MIN_DIR)/wasm_loader.html $(DIST_DIR)/index.html
+	@cp $(MIN_DIR)/favicon.ico $(DIST_DIR)/favicon.ico
 	@echo "✓ WASM build ready in $(DIST_DIR)/"
+
+## minify: shrink all assets recursively into assets.min
+minify: $(MIN_DIR)
+	@echo "→ Minifying assets recursively to $(MIN_DIR)..."
+	@$(MINIFY) -r -s -o $(MIN_DIR) $(ASSETS_DIR)/
+	@echo "✓ Minification complete"
+	@echo "→ Injecting 'prod' build tag into minified assets..."
+	@# This replaces '!prod' with 'prod' in the minified version only
+	@sed -i 's/!prod/prod/g' $(MIN_DIR)/assets.go
+	@echo "✓ Minification and tag injection complete"
 
 ## run-native: build and start the native HTTP server on :8080
 run-native: native
@@ -76,6 +91,7 @@ clean:
 	@echo "→ Cleaning build artefacts"
 	@rm -f $(BINARY)
 	@rm -rf $(DIST_DIR)
+	find $(MIN_DIR) -maxdepth 1 -type f ! -name '*.go' -delete
 	@echo "✓ Clean"
 
 ## help: list available targets
@@ -89,6 +105,10 @@ $(DIST_DIR):
 # ---- Ensure bin/ exists ----------------------------------------------------
 $(BIN_DIR):
 	@mkdir -p $(BIN_DIR)
+
+# ---- Ensure assets.min exists -----------------------------------------------
+$(MIN_DIR):
+	@mkdir -p $(MIN_DIR)
 
 # ---- Favicon ---------------------------------------------------------------
 favicon:
