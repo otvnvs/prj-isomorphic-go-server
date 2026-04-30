@@ -58,6 +58,7 @@ self.loadUsersFromDB = () => {
 // Service Worker lifecycle — take control immediately
 // ---------------------------------------------------------------------------
 
+//registerWasmHTTPListener('a.wasm')
 registerWasmHTTPListener('https://github.com/otvnvs/prj-isomorphic-go-server/raw/refs/heads/main/a.wasm')
 
 addEventListener('install', (event) => {
