@@ -3,9 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>WASM Auth — Loading</title>
+<style>
+body {
+  background: #171826;
+  /* Centers the content */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+p {
+  color: #FFFFFF;
+  font-family: sans-serif;
+  font-size: 1.5rem;
+  /* Applies the animation */
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Pulse effect: scales size and adjusts opacity */
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+</style>
 </head>
 <body>
-    <p>Loading... v4</p>
+    <p>Loading...</p>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(() => {
