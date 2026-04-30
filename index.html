@@ -8,7 +8,7 @@
     <p>Loading…</p>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(() => {
+            navigator.serviceWorker.register('./sw.js').then(() => {
                 // Reload once the SW is controlling the page so requests are intercepted.
                 if (!navigator.serviceWorker.controller) {
                     navigator.serviceWorker.addEventListener('controllerchange', () => {
