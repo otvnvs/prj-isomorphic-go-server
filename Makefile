@@ -90,6 +90,13 @@ $(DIST_DIR):
 $(BIN_DIR):
 	@mkdir -p $(BIN_DIR)
 
+# ---- Favicon ---------------------------------------------------------------
+favicon:
+	@convert -size 256x256 xc:none -fill grey \
+		-draw "circle 128,128 128,40"\
+		-define icon:auto-resize=16,32,48 ./assets/favicon.ico
+	
+
 # ---- Backup ----------------------------------------------------------------
 TIMESTAMP  := $(shell date +%Y%m%d%H%M%S%3N)
 BAK_DIR     = ./bak
