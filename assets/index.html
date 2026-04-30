@@ -35,7 +35,7 @@
     <script>
 async function fetchVersion() {
     try {
-        const response = await fetch('/api/version');
+        const response = await fetch('./api/version');
         const data = await response.json();
         
         // Format the date to be more readable
@@ -78,7 +78,7 @@ fetchVersion();
         }
 
         async function updateUI() {
-            const res = await api('/api/me');
+            const res = await api('./api/me');
             const data = await res.json();
             const status = document.getElementById('status');
             const authFields = document.getElementById('auth-fields');
