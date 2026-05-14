@@ -11,8 +11,8 @@ async function api(path, method = 'GET', body = null) {
 }
 
 async function requireLogin() {
-    const res = await api('/api/me');
+    const res = await api('./api/me');
     const data = await res.json();
-    if (!data.logged_in) window.location.href = '/index.html';
+    if (!data.logged_in) window.location.href = './index.html';
     return data;
 }

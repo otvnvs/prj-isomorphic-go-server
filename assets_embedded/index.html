@@ -15,8 +15,8 @@
         <div id="auth-fields">
             <input id="u" placeholder="Username">
             <input id="p" type="password" placeholder="Password">
-            <button onclick="doAuth('/api/signup')">Create Account</button>
-            <button onclick="doAuth('/api/login')">
+            <button onclick="doAuth('./api/signup')">Create Account</button>
+            <button onclick="doAuth('./api/login')">
                 <span class="btn-text">Sign In</span>
                 <div class="spinner"></div>
             </button>
@@ -36,7 +36,7 @@
     <script>
 	async function fetchVersion() {
 	    try {
-		const response = await fetch('/api/version');
+		const response = await fetch('./api/version');
 		const data = await response.json();
 		
 		// Format the date to be more readable
@@ -68,7 +68,7 @@
         }
 
         async function updateUI() {
-            const res = await api('/api/me');
+            const res = await api('./api/me');
             const data = await res.json();
             const status = document.getElementById('status');
             const authFields = document.getElementById('auth-fields');

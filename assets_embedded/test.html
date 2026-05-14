@@ -34,7 +34,7 @@
         }
 
         async function callPublic() {
-            const res = await api('/api/sampleNotRequiringToken');
+            const res = await api('./api/sampleNotRequiringToken');
             const data = await res.json();
             if (res.ok) {
                 notify('Public call succeeded');
@@ -46,7 +46,7 @@
         }
 
         async function callProtected() {
-            const res = await api('/api/sampleRequiringToken');
+            const res = await api('./api/sampleRequiringToken');
             const data = await res.json();
             if (res.ok) {
                 notify('Protected call succeeded');
