@@ -1,39 +1,16 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"log"
 	"net/http"
 	"strings"
-	"time"
-
-	"example/assets"
 )
-/*
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	data, err := assets.FS.ReadFile("index.html")
-	if err != nil {
-		http.Error(w, "index.html not found", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "text/html")
-	w.Write(data)
-}
-*/
 
-// serveAsset serves any file from the embedded assets.FS by its filename.
-// The Content-Type is detected automatically from the file extension.
-func serveAsset(name string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		data, err := assets.FS.ReadFile(name)
-		if err != nil {
-			http.NotFound(w, r)
-			return
-		}
-		http.ServeContent(w, r, name, time.Time{}, bytes.NewReader(data))
-	}
-}
+const (
+	maxUsernameLen = 64
+	maxPasswordLen = 128
+)
 
 func signup(w http.ResponseWriter, r *http.Request) {
 	var creds struct{ Username, Password string }
@@ -41,11 +18,24 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request"})
 		return
 	}
-	if !store.AddUser(creds.Username, creds.Password) {
+	if creds.Username == "" || creds.Password == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "username and password required"})
+		return
+	}
+	if len(creds.Username) > maxUsernameLen || len(creds.Password) > maxPasswordLen {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "username or password too long"})
+		return
+	}
+	ok, err := dbAddUser(creds.Username, creds.Password)
+	if err != nil {
+		log.Printf("signup: %v", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "server error"})
+		return
+	}
+	if !ok {
 		writeJSON(w, http.StatusConflict, map[string]string{"error": "user exists"})
 		return
 	}
-	persistUser(creds.Username, creds.Password)
 	log.Printf("👤 Created user: %s", creds.Username)
 	writeJSON(w, http.StatusOK, map[string]string{"message": "Account created!"})
 }
@@ -56,28 +46,45 @@ func login(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request"})
 		return
 	}
-	token, ok := store.Authenticate(creds.Username, creds.Password)
+	ok, err := dbAuthenticate(creds.Username, creds.Password)
+	if err != nil {
+		log.Printf("login: %v", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "server error"})
+		return
+	}
 	if !ok {
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid username or password"})
 		return
 	}
+	token := store.CreateSession(creds.Username)
 	writeJSON(w, http.StatusOK, map[string]string{"token": token, "message": "Welcome back!"})
 }
 
 func checkAuth(w http.ResponseWriter, r *http.Request) {
 	auth := r.Header.Get("Authorization")
 	token := strings.TrimPrefix(auth, "Bearer ")
-	user, ok := store.LookupSession(token)
-	w.Header().Set("Content-Type", "application/json")
-	if ok && token != "" {
-		writeJSON(w, http.StatusOK, map[string]any{"logged_in": true, "user": user})
-	} else {
+	if token == "" {
 		writeJSON(w, http.StatusOK, map[string]any{"logged_in": false})
+		return
 	}
+	user, ok := store.LookupSession(token)
+	if !ok {
+		writeJSON(w, http.StatusOK, map[string]any{"logged_in": false})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"logged_in": true, "user": user})
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(v)
+}
+
+func sampleNotRequiringToken(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "message": "sampleNotRequiringToken"})
+}
+
+func sampleRequiringToken(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "message": "sampleRequiringToken"})
 }

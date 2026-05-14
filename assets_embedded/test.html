@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WASM Auth</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/app.js"></script>
+</head>
+<body>
+    <div id="toast"></div>
+
+    <div class="card">
+        <div id="status">Syncing...</div>
+
+        <button onclick="callPublic()">Call public endpoint</button>
+        <button onclick="callProtected()">Call protected endpoint</button>
+
+        <pre id="output" style="margin-top: 1.5rem; font-size: 0.8rem; opacity: 0.7; white-space: pre-wrap;"></pre>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        function notify(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.background = isError ? '#ff4757' : '#2ed573';
+            t.classList.add('show-toast');
+            setTimeout(() => t.classList.remove('show-toast'), 3000);
+        }
+
+        function show(data) {
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function callPublic() {
+            const res = await api('/api/sampleNotRequiringToken');
+            const data = await res.json();
+            if (res.ok) {
+                notify('Public call succeeded');
+                show(data);
+            } else {
+                notify(data.error || 'Request failed', true);
+                show(data);
+            }
+        }
+
+        async function callProtected() {
+            const res = await api('/api/sampleRequiringToken');
+            const data = await res.json();
+            if (res.ok) {
+                notify('Protected call succeeded');
+                show(data);
+            } else {
+                notify(data.error || 'Unauthorized', true);
+                show(data);
+            }
+        }
+
+        requireLogin().then(data => {
+            currentUser = data.user;
+            document.getElementById('status').textContent = 'Logged in as ' + currentUser;
+        });
+    </script>
+</body>
+</html>

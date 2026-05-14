@@ -1,6 +1,10 @@
 github.com/hack-pad/safejs v0.1.1 h1:d5qPO0iQ7h2oVtpzGnLExE+Wn9AtytxIfltcS2b9KD8=
 github.com/hack-pad/safejs v0.1.1/go.mod h1:HdS+bKF1NrE72VoXZeWzxFOVQVUSqZJAG0xNCnb+Tio=
+github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o4kU=
+github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 github.com/nlepage/go-js-promise v1.0.0 h1:K7OmJ3+0BgWJ2LfXchg2sI6RDr7AW/KWR8182epFwGQ=
 github.com/nlepage/go-js-promise v1.0.0/go.mod h1:bdOP0wObXu34euibyK39K1hoBCtlgTKXGc56AGflaRo=
 github.com/nlepage/go-wasm-http-server/v2 v2.2.1 h1:4tzhSb3HKQ3Ykt2TPfqEnmcPfw8n1E8agv4OzAyckr8=
 github.com/nlepage/go-wasm-http-server/v2 v2.2.1/go.mod h1:r8j7cEOeUqNp+c+C52sNuWaFTvvT/cNqIwBuEtA36HA=
+golang.org/x/crypto v0.23.0 h1:dIJU/v2J8Mdglj/8rJ6UUOM3Zc9zLZxVZwwxMooUSAI=
+golang.org/x/crypto v0.23.0/go.mod h1:CKFgDieR+mRhux2Lsu27y0fO304Db0wZe70UKqHu0v8=

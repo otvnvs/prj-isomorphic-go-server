@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WASM Auth — Loading</title>
+</head>
+<body>
+    <p>Loading…</p>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(() => {
+                if (!navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                        window.location.reload();
+                    });
+                }
+            });
+        } else {
+            document.body.innerHTML = '<p>Service Workers are not supported in this browser.</p>';
+        }
+    </script>
+</body>
+</html>

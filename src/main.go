@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	"example/assets"
+	"myapp/assets_embedded"
 )
 
 func main() {
@@ -10,6 +10,8 @@ func main() {
 	http.HandleFunc("/api/signup", logger(signup))
 	http.HandleFunc("/api/login", logger(login))
 	http.HandleFunc("/api/me", logger(checkAuth))
-	http.Handle("/", http.FileServerFS(assets.FS))
+	http.HandleFunc("/api/sampleRequiringToken", logger(requireAuth(sampleRequiringToken)))
+	http.HandleFunc("/api/sampleNotRequiringToken", logger(sampleNotRequiringToken))
+	http.Handle("/", http.FileServerFS(assets_embedded.FS))
 	startServer()
 }

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WASM Auth</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="./app.js"></script>
+</head>
+<body>
+    <div id="toast"></div>
+
+    <div class="card">
+        <div id="status">Syncing...</div>
+
+        <div id="auth-fields">
+            <input id="u" placeholder="Username">
+            <input id="p" type="password" placeholder="Password">
+            <button onclick="doAuth('/api/signup')">Create Account</button>
+            <button onclick="doAuth('/api/login')">
+                <span class="btn-text">Sign In</span>
+                <div class="spinner"></div>
+            </button>
+        </div>
+
+        <div id="user-fields" class="hidden">
+            <button class="danger" onclick="doLogout()">Log Out</button>
+        </div>
+
+    <!-- Add this section at the bottom -->
+    <div id="version-info" style="margin-top: 20px; font-size: 0.8em; opacity: 0.7;">
+        Version: <span id="v-num">Loading...</span> | 
+        Built: <span id="v-time"></span>
+    </div>
+    </div>
+
+    <script>
+	async function fetchVersion() {
+	    try {
+		const response = await fetch('/api/version');
+		const data = await response.json();
+		
+		// Format the date to be more readable
+		const date = new Date(data.build_time).toLocaleString();
+
+		document.getElementById('v-num').textContent = data.version;
+		document.getElementById('v-time').textContent = date;
+	    } catch (error) {
+		console.error('Failed to fetch version:', error);
+		document.getElementById('version-info').textContent = 'Version unavailable';
+	    }
+	}
+
+	// Call it on page load
+	fetchVersion();
+
+        function notify(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.background = isError ? "#ff4757" : "#2ed573";
+            t.classList.add('show-toast');
+            setTimeout(() => t.classList.remove('show-toast'), 3000);
+        }
+
+        function setLoading(isLoading) {
+            document.querySelectorAll('button').forEach(b => b.disabled = isLoading);
+            document.querySelector('.btn-text').style.display = isLoading ? 'none' : 'inline';
+            document.querySelector('.spinner').style.display = isLoading ? 'block' : 'none';
+        }
+
+        async function updateUI() {
+            const res = await api('/api/me');
+            const data = await res.json();
+            const status = document.getElementById('status');
+            const authFields = document.getElementById('auth-fields');
+            const userFields = document.getElementById('user-fields');
+
+            if (data.logged_in) {
+                status.innerText = "Welcome, " + data.user;
+                status.style.color = "#2f3542";
+                status.style.background = "#e1e4e8";
+                authFields.classList.add('hidden');
+                userFields.classList.remove('hidden');
+            } else {
+                status.innerText = "Please Sign In";
+                status.style.color = "#57606f";
+                status.style.background = "transparent";
+                authFields.classList.remove('hidden');
+                userFields.classList.add('hidden');
+            }
+        }
+
+        async function doAuth(path) {
+            const u = document.getElementById('u').value;
+            const p = document.getElementById('p').value;
+            if (!u || !p) return notify("Please fill all fields", true);
+
+            setLoading(true);
+            const res = await api(path, 'POST', { username: u, password: p });
+            const data = await res.json();
+            setLoading(false);
+
+            if (res.ok) {
+                if (data.token) setToken(data.token);
+                notify(data.message || "Success!");
+                updateUI();
+            } else {
+                notify(data.error || "Action failed", true);
+            }
+        }
+
+        function doLogout() {
+            clearToken();
+            notify("Logged out");
+            updateUI();
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
