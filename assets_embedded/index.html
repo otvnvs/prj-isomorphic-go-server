@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WASM Auth</title>
-    <link rel="stylesheet" href="./style.css">
-    <script src="./app.js"></script>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <div id="toast"></div>
@@ -17,8 +15,8 @@
         <div id="auth-fields">
             <input id="u" placeholder="Username">
             <input id="p" type="password" placeholder="Password">
-            <button onclick="doAuth('./api/signup')">Create Account</button>
-            <button onclick="doAuth('./api/login')">
+            <button onclick="doAuth('/api/signup')">Create Account</button>
+            <button onclick="doAuth('/api/login')">
                 <span class="btn-text">Sign In</span>
                 <div class="spinner"></div>
             </button>
@@ -36,24 +34,28 @@
     </div>
 
     <script>
-	async function fetchVersion() {
-	    try {
-		const response = await fetch('./api/version');
-		const data = await response.json();
-		
-		// Format the date to be more readable
-		const date = new Date(data.build_time).toLocaleString();
+async function fetchVersion() {
+    try {
+        const response = await fetch('/api/version');
+        const data = await response.json();
+        
+        // Format the date to be more readable
+        const date = new Date(data.build_time).toLocaleString();
 
-		document.getElementById('v-num').textContent = data.version;
-		document.getElementById('v-time').textContent = date;
-	    } catch (error) {
-		console.error('Failed to fetch version:', error);
-		document.getElementById('version-info').textContent = 'Version unavailable';
-	    }
-	}
+        document.getElementById('v-num').textContent = data.version;
+        document.getElementById('v-time').textContent = date;
+    } catch (error) {
+        console.error('Failed to fetch version:', error);
+        document.getElementById('version-info').textContent = 'Version unavailable';
+    }
+}
 
-	// Call it on page load
-	fetchVersion();
+// Call it on page load
+fetchVersion();
+
+        const getToken = () => localStorage.getItem('wasm_token');
+        const setToken = (t) => localStorage.setItem('wasm_token', t);
+        const clearToken = () => localStorage.removeItem('wasm_token');
 
         function notify(msg, isError = false) {
             const t = document.getElementById('toast');
@@ -69,8 +71,15 @@
             document.querySelector('.spinner').style.display = isLoading ? 'block' : 'none';
         }
 
+        async function api(path, method = 'GET', body = null) {
+            const headers = { 'Content-Type': 'application/json' };
+            const token = getToken();
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+            return fetch(path, { method, headers, body: body ? JSON.stringify(body) : null });
+        }
+
         async function updateUI() {
-            const res = await api('./api/me');
+            const res = await api('/api/me');
             const data = await res.json();
             const status = document.getElementById('status');
             const authFields = document.getElementById('auth-fields');
